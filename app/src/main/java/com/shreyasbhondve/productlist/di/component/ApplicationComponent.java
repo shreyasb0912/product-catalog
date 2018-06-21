@@ -3,6 +3,8 @@ package com.shreyasbhondve.productlist.di.component;
 import android.content.Context;
 
 import com.shreyasbhondve.productlist.MyApplication;
+import com.shreyasbhondve.productlist.db.DataManager;
+import com.shreyasbhondve.productlist.db.MySqliteOpenHelper;
 import com.shreyasbhondve.productlist.di.module.ContextModule;
 import com.shreyasbhondve.productlist.di.module.RetrofitModule;
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
@@ -17,8 +19,14 @@ public interface ApplicationComponent {
 
     public APIInterface getApiInterface();
 
+    DataManager getDataManager();
+
+    MySqliteOpenHelper getMySqliteOpenHelper();
+
     @ApplicationContext
     public Context getContext();
 
     public void injectApplication(MyApplication myApplication);
+
+
 }

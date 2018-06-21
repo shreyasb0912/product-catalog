@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.shreyasbhondve.productlist.MyApplication;
 import com.shreyasbhondve.productlist.R;
 import com.shreyasbhondve.productlist.adapter.RecyclerViewAdapter;
+import com.shreyasbhondve.productlist.db.DataManager;
 import com.shreyasbhondve.productlist.di.component.ApplicationComponent;
 import com.shreyasbhondve.productlist.di.component.DaggerMainActivityComponent;
 import com.shreyasbhondve.productlist.di.component.MainActivityComponent;
@@ -46,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Inject
     @ActivityContext
     public Context activityContext;
+
+    @Inject
+    DataManager dataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
