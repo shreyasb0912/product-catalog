@@ -23,6 +23,9 @@ public class MyApplication extends Application {
         super.onCreate();
 
         applicationComponent = DaggerApplicationComponent.builder().contextModule(new ContextModule(this)).build();
+//        applicationComponent  = DaggerApplicationComponent.builder()
+//                .applicationModule(new ApplicationModule(this))
+//                .build();
         applicationComponent.injectApplication(this);
 
     }

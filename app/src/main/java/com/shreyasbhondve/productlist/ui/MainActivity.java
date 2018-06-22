@@ -3,6 +3,7 @@ package com.shreyasbhondve.productlist.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -84,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             @Override
             public void onResponse(retrofit2.Call<Category> call, retrofit2.Response<Category> response) {
                 Log.v("data",response.body().toString());
+
             }
 
             @Override
@@ -92,6 +94,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             }
         });
     }
+
+//    @Override
+//    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+//        super.onPostCreate(savedInstanceState);
+//        dataManager.getProducts();
+//    }
 
     private void populateRecyclerView() {
 

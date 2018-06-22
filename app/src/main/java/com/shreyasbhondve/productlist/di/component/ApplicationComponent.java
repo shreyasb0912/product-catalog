@@ -11,22 +11,26 @@ import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
 import com.shreyasbhondve.productlist.di.scopes.ApplicationScope;
 import com.shreyasbhondve.productlist.retrofit.APIInterface;
 
+import javax.inject.Singleton;
+
 import dagger.Component;
 
+@Singleton
 @ApplicationScope
 @Component(modules = {ContextModule.class, RetrofitModule.class})
 public interface ApplicationComponent {
+
+    public void injectApplication(MyApplication myApplication);
+
+    @ApplicationContext
+    public Context getContext();
+
 
     public APIInterface getApiInterface();
 
     DataManager getDataManager();
 
     MySqliteOpenHelper getMySqliteOpenHelper();
-
-    @ApplicationContext
-    public Context getContext();
-
-    public void injectApplication(MyApplication myApplication);
 
 
 }

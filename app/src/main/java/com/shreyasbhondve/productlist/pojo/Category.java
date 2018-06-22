@@ -15,6 +15,30 @@ public class Category {
     @SerializedName("products")
     public List<Product> products = null;
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
+
     public class Product {
 
         @SerializedName("id")
@@ -29,7 +53,47 @@ public class Category {
         @SerializedName("variants")
         public List<Variants> variants = null;
 
+        public String cat_id;
 
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDate_added(String date_added) {
+            this.date_added = date_added;
+        }
+
+        public void setVariants(List<Variants> variants) {
+            this.variants = variants;
+        }
+
+        public void setCat_id(String cat_id) {
+            this.cat_id = cat_id;
+        }
+
+        public String getCat_id() {
+            return cat_id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDate_added() {
+            return date_added;
+        }
+
+        public List<Variants> getVariants() {
+            return variants;
+        }
 
         public class Variants{
             @SerializedName("id")
@@ -40,6 +104,38 @@ public class Category {
             public String size;
             @SerializedName("price")
             public String price;
+
+            public String getId() {
+                return id;
+            }
+
+            public void setId(String id) {
+                this.id = id;
+            }
+
+            public String getColor() {
+                return color;
+            }
+
+            public void setColor(String color) {
+                this.color = color;
+            }
+
+            public String getSize() {
+                return size;
+            }
+
+            public void setSize(String size) {
+                this.size = size;
+            }
+
+            public String getPrice() {
+                return price;
+            }
+
+            public void setPrice(String price) {
+                this.price = price;
+            }
         }
     }
 }
