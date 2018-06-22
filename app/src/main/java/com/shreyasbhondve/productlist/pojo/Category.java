@@ -39,7 +39,7 @@ public class Category {
         this.products = products;
     }
 
-    public class Product {
+    public static class Product {
 
         @SerializedName("id")
         public String id;
@@ -95,7 +95,7 @@ public class Category {
             return variants;
         }
 
-        public class Variants{
+        public static class Variants{
             @SerializedName("id")
             public String id;
             @SerializedName("color")
@@ -104,6 +104,16 @@ public class Category {
             public String size;
             @SerializedName("price")
             public String price;
+
+            public String prod_id;
+
+            public String getProd_id() {
+                return prod_id;
+            }
+
+            public void setProd_id(String prod_id) {
+                this.prod_id = prod_id;
+            }
 
             public String getId() {
                 return id;
