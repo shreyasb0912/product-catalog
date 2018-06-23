@@ -5,6 +5,7 @@ import android.content.Context;
 import com.shreyasbhondve.productlist.MyApplication;
 import com.shreyasbhondve.productlist.db.DataManager;
 import com.shreyasbhondve.productlist.db.MySqliteOpenHelper;
+import com.shreyasbhondve.productlist.db.SharedPreferenceHelper;
 import com.shreyasbhondve.productlist.di.module.ContextModule;
 import com.shreyasbhondve.productlist.di.module.RetrofitModule;
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
@@ -31,6 +32,8 @@ public interface ApplicationComponent {
     DataManager getDataManager();
 
     MySqliteOpenHelper getMySqliteOpenHelper();
+
+    SharedPreferenceHelper getSharedPreferenceHelper();
 
 
 }

@@ -1,6 +1,8 @@
 package com.shreyasbhondve.productlist.di.module;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
 import com.shreyasbhondve.productlist.di.qualifier.DatabaseInfo;
@@ -13,8 +15,12 @@ import dagger.Provides;
 public class ContextModule {
     private Context context;
 
-    public ContextModule(Context context) {
+
+    private final Application mApplication;
+
+    public ContextModule(Context context,Application app) {
         this.context = context;
+        mApplication = app;
     }
 
     @Provides
@@ -34,5 +40,10 @@ public class ContextModule {
     @DatabaseInfo
     Integer provideDatabaseVersion() {
         return 1;
+    }
+
+    @Provides
+    SharedPreferences provideSharedPrefs() {
+        return mApplication.getSharedPreferences("demo-prefs", Context.MODE_PRIVATE);
     }
 }

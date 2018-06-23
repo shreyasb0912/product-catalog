@@ -22,6 +22,7 @@ import com.shreyasbhondve.productlist.di.module.MainActivityContextModule;
 import com.shreyasbhondve.productlist.di.qualifier.ActivityContext;
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
 import com.shreyasbhondve.productlist.pojo.ProductCatalog;
+import com.shreyasbhondve.productlist.pojo.Ranking;
 import com.shreyasbhondve.productlist.retrofit.APIInterface;
 
 import org.json.JSONArray;
@@ -75,32 +76,29 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         mainActivityComponent.injectMainActivity(this);
         recyclerView.setAdapter(recyclerViewAdapter);
 
-//        apiInterface.getPeople("json").enqueue(new Callback<StarWars>() {
-//            @Override
-//            public void onResponse(retrofit2.Call<StarWars> call, retrofit2.Response<StarWars> response) {
-//                populateRecyclerView(response.body().results);
-//            }
-//
-//            @Override
-//            public void onFailure(retrofit2.Call<StarWars> call, Throwable t) {
-//
-//            }
-//        });
 
-        apiInterface.getCategories("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<ProductCatalog>() {
-            @Override
-            public void onResponse(retrofit2.Call<ProductCatalog> call, retrofit2.Response<ProductCatalog> response) {
+        boolean firstRun = dataManager.getFirstRun("first_run", true);
+        Log.v("database", "IS first run? " + firstRun);
+        if (firstRun) {
+            apiInterface.getCategories("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<ProductCatalog>() {
+                @Override
+                public void onResponse(retrofit2.Call<ProductCatalog> call, retrofit2.Response<ProductCatalog> response) {
 
-                List<ProductCatalog.Category> categoryList = response.body().categories;
-                new ParseData().execute(categoryList);
+                    List<ProductCatalog.Category> categoryList = response.body().categories;
+                    new ParseData().execute(categoryList);
 
-            }
+                }
 
-            @Override
-            public void onFailure(retrofit2.Call<ProductCatalog> call, Throwable t) {
+                @Override
+                public void onFailure(retrofit2.Call<ProductCatalog> call, Throwable t) {
 
-            }
-        });
+                }
+            });
+        } else {
+            dataManager.getCategories();
+        }
+
+
     }
 
     public class ParseData extends AsyncTask<List<ProductCatalog.Category>, Void, Void> {
@@ -108,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         ArrayList<ProductCatalog.Category> newCategoryList = new ArrayList<>();
         ArrayList<ProductCatalog.Category.Product> newProductList = new ArrayList<>();
         ArrayList<ProductCatalog.Category.Product.Variants> newVariantsList = new ArrayList<>();
+
 
         @Override
         protected void onPreExecute() {
@@ -118,13 +117,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         protected Void doInBackground(List<ProductCatalog.Category>... categoryLists) {
 
             List<ProductCatalog.Category> categoryList = categoryLists[0];
-
+            //Log.v("database", "\n----------From server--------\n");
             for (int i = 0; i < categoryList.size(); i++) {
                 ProductCatalog.Category newCategory = new ProductCatalog.Category();
                 ProductCatalog.Category category = categoryList.get(i);
                 String cat_id = category.getId();
                 newCategory.setId(cat_id);
                 newCategory.setName(category.getName());
+                //Log.v("database", "\ncat_id: " + cat_id + "\ncat_name: " + category.getName());
                 List<ProductCatalog.Category.Product> productList = category.getProducts();
                 for (int j = 0; j < productList.size(); j++) {
                     ProductCatalog.Category.Product newProduct = new ProductCatalog.Category.Product();
@@ -133,7 +133,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                     newProduct.setCat_id(cat_id);
                     newProduct.setId(prod_id);
                     newProduct.setName(product.getName());
-
+                    newProduct.setDate_added(product.getDate_added());
+                    //Log.v("database","------\nprod_id: " + prod_id + "\nprod_name: " + product.getName() + "------\n");
                     List<ProductCatalog.Category.Product.Variants> variantsList = product.getVariants();
                     for (int k = 0; k < variantsList.size(); k++) {
                         ProductCatalog.Category.Product.Variants newVariants = new ProductCatalog.Category.Product.Variants();
@@ -144,76 +145,32 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                         newVariants.setPrice(variants.getPrice());
                         newVariants.setSize(variants.getSize());
                         newVariants.setProd_id(prod_id);
+                        //Log.v("database","------\nvar_id: " + var_id + "\nprice: " + variants.getPrice() +  "\nsize: " + variants.getSize() + "------\n");
                         newVariantsList.add(newVariants);
                     }
                     //newProduct.setVariants(variantsList);
                     newProductList.add(newProduct);
                 }
+
+
+
                 //newCategory.setProducts(productList);
                 newCategoryList.add(newCategory);
             }
-
+            //Log.v("database", "\n-------------------------------------");
             insertCategories();
             insertProducts();
             insertVariants();
 
 
-//            try {
-//                Log.v("response", strings[0]);
-//                JSONObject jsonObject = new JSONObject(strings[0]);
-//                JSONArray categoriesJsonArray = jsonObject.getJSONArray("categories");
-//
-//                for(int i=0;i<categoriesJsonArray.length();i++){
-//                    JSONObject categoryJsonObject = categoriesJsonArray.getJSONObject(i);
-//                    //categoryList = new ArrayList<Category>();
-//                    Category category = new Category();
-//                    String cat_id = categoryJsonObject.getString("id");
-//                    category.setId(cat_id);
-//                    category.setName(categoryJsonObject.getString("name"));
-//                    JSONArray productJsonArray = categoryJsonObject.getJSONArray("products");
-//                    for(int j=0;j<productJsonArray.length();j++){
-//                        JSONObject productJsonObject = productJsonArray.getJSONObject(j);
-//                        //productList = new ArrayList<Category.Product>();
-//                        Category.Product product = new Category.Product();
-//                        String prod_id = productJsonObject.getString("id");
-//                        product.setId(prod_id);
-//                        product.setCat_id(cat_id);
-//                        product.setName(productJsonObject.getString("name"));
-//                        product.setDate_added(productJsonObject.getString("date_added"));
-//
-//                        JSONArray variantJsonArray = productJsonObject.getJSONArray("variants");
-//                        for(int k=0;k<variantJsonArray.length();k++){
-//                            JSONObject variantJsonObject = variantJsonArray.getJSONObject(k);
-//                            //variantsList = new ArrayList<Category.Product.Variants>();
-//                            String var_id = variantJsonObject.getString("id");
-//                            Category.Product.Variants variants = new Category.Product.Variants();
-//                            variants.setId(var_id);
-//                            variants.setProd_id(prod_id);
-//                            variants.setColor(variantJsonObject.getString("color"));
-//                            variants.setPrice(variantJsonObject.getString("price"));
-//                            variants.setSize(variantJsonObject.getString("size"));
-//                            variantsList.add(variants);
-//                        }
-//                        product.setVariants(variantsList);
-//                        productList.add(product);
-//                    }
-//                    category.setProducts(productList);
-//                    categoryList.add(category);
-//
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//            insertCategories();
-//            insertProducts();
-//            insertVariants();
+
+
             return null;
         }
 
         private void insertProducts() {
 
-            for(int i=0;i<newProductList.size();i++) {
+            for (int i = 0; i < newProductList.size(); i++) {
                 try {
                     dataManager.insertProduct(newProductList.get(i));
                 } catch (Exception e) {
@@ -226,8 +183,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         private void insertCategories() {
 
-            for(int i=0;i<newCategoryList.size();i++) {
+            for (int i = 0; i < newCategoryList.size(); i++) {
+                Log.v("database", "calling insertCategories");
                 try {
+
                     dataManager.insertCategory(newCategoryList.get(i));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -239,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         private void insertVariants() {
 
-            for(int i=0;i<newVariantsList.size();i++) {
+            for (int i = 0; i < newVariantsList.size(); i++) {
                 try {
                     dataManager.insertVariant(newVariantsList.get(i));
                 } catch (Exception e) {
@@ -253,16 +212,73 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            dataManager.getProducts();
-            dataManager.getCategories();
-            dataManager.getVariants();
-        }
-    }
+            //dataManager.setFirstRun("first_run", false);
 
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        dataManager.getProducts();
+            apiInterface.getRankings("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<Ranking>() {
+                @Override
+                public void onResponse(retrofit2.Call<Ranking> call, retrofit2.Response<Ranking> response) {
+
+                    List<Ranking.ProductRanking> rankingList = response.body().productRankings;
+
+
+                        for (int i = 0; i < rankingList.size(); i++) {
+
+                            String ranking = rankingList.get(i).getRanking();
+                            List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+                            if(ranking.equals("Most Viewed Products")){
+                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+                                for(int j=0;j<rankingProducts.size();j++){
+                                    Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
+                                    product.setId(rankingProducts.get(j).getId());
+                                    product.setView_count(rankingProducts.get(j).getView_count());
+                                    try {
+                                        dataManager.insertViewRankings(product);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+                            else if(ranking.equals("Most OrdeRed Products")){
+                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+                                for(int j=0;j<rankingProducts.size();j++){
+                                    Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
+                                    product.setId(rankingProducts.get(j).getId());
+                                    product.setOrder_count(rankingProducts.get(j).getOrder_count());
+                                    try {
+                                        dataManager.insertOrderRankings(product);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            else if(ranking.equals("Most ShaRed Products")){
+                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+                                for(int j=0;j<rankingProducts.size();j++){
+                                    Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
+                                    product.setId(rankingProducts.get(j).getId());
+                                    product.setShare_count(rankingProducts.get(j).getShare_count());
+                                    try {
+                                        dataManager.insertShareRankings(product);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+
+
+                        }
+
+                    dataManager.setFirstRun("first_run", false);
+
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<Ranking> call, Throwable t) {
+
+                }
+            });
+        }
     }
 
     private void populateRecyclerView() {

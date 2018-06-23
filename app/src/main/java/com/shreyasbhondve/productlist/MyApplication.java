@@ -22,7 +22,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        applicationComponent = DaggerApplicationComponent.builder().contextModule(new ContextModule(this)).build();
+        applicationComponent = DaggerApplicationComponent.builder().contextModule(new ContextModule(this, (Application) getApplicationContext())).build();
 //        applicationComponent  = DaggerApplicationComponent.builder()
 //                .applicationModule(new ApplicationModule(this))
 //                .build();

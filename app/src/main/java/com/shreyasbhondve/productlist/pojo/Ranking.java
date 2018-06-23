@@ -6,37 +6,81 @@ import java.util.List;
 
 public class Ranking {
 
-    @SerializedName("ranking")
-    public String ranking;
+    @SerializedName("rankings")
+    public List<ProductRanking> productRankings = null;
 
-    @SerializedName("products")
-    public List<Product> products = null;
+    public static class ProductRanking{
+        @SerializedName("ranking")
+        public String ranking;
 
-    public class Product {
+        @SerializedName("products")
+        public List<Products> products = null;
 
-        @SerializedName("id")
-        public String id;
+        public String getRanking() {
+            return ranking;
+        }
 
-        @SerializedName("name")
-        public String name;
+        public void setRanking(String ranking) {
+            this.ranking = ranking;
+        }
 
-        @SerializedName("date_added")
-        public String date_added;
+        public List<Products> getProducts() {
+            return products;
+        }
 
-        @SerializedName("variants")
-        public List<Category.Product.Variants> variants = null;
+        public void setProducts(List<Products> products) {
+            this.products = products;
+        }
 
-
-
-        public class Variants{
+        public static class Products{
             @SerializedName("id")
             public String id;
-            @SerializedName("color")
-            public String color;
-            @SerializedName("size")
-            public String size;
-            @SerializedName("price")
-            public String price;
+
+            @SerializedName("view_count")
+            public String view_count;
+
+            @SerializedName("order_count")
+            public String order_count;
+
+            @SerializedName("shares")
+            public String share_count;
+
+
+            public String getId() {
+                return id;
+            }
+
+            public void setId(String id) {
+                this.id = id;
+            }
+
+            public String getView_count() {
+                return view_count;
+            }
+
+            public void setView_count(String view_count) {
+                this.view_count = view_count;
+            }
+
+            public String getOrder_count() {
+                return order_count;
+            }
+
+            public void setOrder_count(String order_count) {
+                this.order_count = order_count;
+            }
+
+            public String getShare_count() {
+                return share_count;
+            }
+
+            public void setShare_count(String share_count) {
+                this.share_count = share_count;
+            }
         }
+
+
     }
+
+
 }
