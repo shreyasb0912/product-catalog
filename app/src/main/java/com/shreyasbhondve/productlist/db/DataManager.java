@@ -6,9 +6,10 @@ import android.content.res.Resources;
 import android.util.Log;
 
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
-import com.shreyasbhondve.productlist.pojo.Category;
 import com.shreyasbhondve.productlist.pojo.ProductCatalog;
 import com.shreyasbhondve.productlist.pojo.Ranking;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -49,8 +50,8 @@ public class DataManager {
         return mySqliteOpenHelper.isVariantsPresent();
     }
 
-    public boolean getProducts() throws Resources.NotFoundException,NullPointerException{
-        return mySqliteOpenHelper.isProductsPresent();
+    public List<ProductCatalog.Category.Product> getProducts(String filter) throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.getProducts(filter);
     }
 
     public void getCategories() throws Resources.NotFoundException,NullPointerException{

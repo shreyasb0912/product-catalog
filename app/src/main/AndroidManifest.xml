@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
 
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.MainActivity"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +25,8 @@
         </activity>
 
 
-        <activity android:name=".ui.DetailActivity" />
+        <activity android:name=".ui.DetailActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
 
     </application>
 </manifest>

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">ProductList</string>
+
+    <string-array name="filter_options">
+        <item>Most Viewed</item>
+        <item>Most Ordered</item>
+        <item>Most Shared</item>
+    </string-array>
 </resources>

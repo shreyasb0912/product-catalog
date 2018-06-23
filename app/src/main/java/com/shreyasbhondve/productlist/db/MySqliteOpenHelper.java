@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
 import com.shreyasbhondve.productlist.di.qualifier.DatabaseInfo;
-import com.shreyasbhondve.productlist.pojo.Category;
+
 import com.shreyasbhondve.productlist.pojo.ProductCatalog;
 import com.shreyasbhondve.productlist.pojo.Ranking;
 
@@ -154,39 +154,28 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    protected boolean isProductsPresent() throws Resources.NotFoundException, NullPointerException {
-        Log.v("database", "inside isProductsPresent");
-        Cursor cursor = null;
-        try {
-            SQLiteDatabase db = this.getReadableDatabase();
-            cursor = db.rawQuery(
-                    "SELECT * FROM "
-                            + PRODUCT_TABLE_NAME,
-                    null);
+    protected List<ProductCatalog.Category.Product> getProducts(String filter) throws Resources.NotFoundException, NullPointerException {
+        List<ProductCatalog.Category.Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + PRODUCT_TABLE_NAME + " ORDER BY " + filter + " DESC", null);
 
-
-            int i = 1;
-            if (cursor.moveToFirst()) {
-                do {
-                    Log.v("database", "-------" + i + "--------" + "\n\nprod_id: " + cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_ID)
-                            + "\nprod_name: " + cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_NAME) + "\n\n\n");
-                    i++;
-                } while (cursor.moveToNext());
-                db.close();
-                return true;
-            } else {
-                db.close();
-                return false;
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                String name = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_NAME));
+                String id = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_ID));
+                ProductCatalog.Category.Product product = new ProductCatalog.Category.Product();
+                product.setId(id);
+                product.setName(name);
+                productList.add(product);
+                cursor.moveToNext();
             }
-
-
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            throw e;
-        } finally {
-            if (cursor != null)
-                cursor.close();
         }
+
+        cursor.close();
+        // close db connection
+        db.close();
+
+        return productList;
 
     }
 

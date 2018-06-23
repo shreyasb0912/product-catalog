@@ -5,10 +5,16 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.shreyasbhondve.productlist.MyApplication;
@@ -59,6 +65,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Inject
     DataManager dataManager;
 
+    enum Filter{
+        MOST_VIEWED,MOST_ORDERED,MOST_SHARED
+    }
+
+    Filter filter = Filter.MOST_VIEWED;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +107,38 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 }
             });
         } else {
-            dataManager.getCategories();
+            populateRecyclerView();
+        }
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.filter_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.most_viewed:
+                filter = Filter.MOST_VIEWED;
+                populateRecyclerView();
+                return true;
+            case R.id.most_ordered:
+                filter = Filter.MOST_ORDERED;
+                populateRecyclerView();
+                return true;
+            case R.id.most_shared:
+                filter = Filter.MOST_SHARED;
+                populateRecyclerView();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
 
@@ -269,6 +312,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
                         }
 
+                    populateRecyclerView();
+
                     dataManager.setFirstRun("first_run", false);
 
                 }
@@ -282,13 +327,26 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     private void populateRecyclerView() {
+        List<ProductCatalog.Category.Product> productList = null;
+        switch (filter){
+            case MOST_VIEWED:
+                productList = dataManager.getProducts("view_count");
+                break;
+            case MOST_ORDERED:
+                productList = dataManager.getProducts("order_count");
+                break;
+            case MOST_SHARED:
+                productList = dataManager.getProducts("share_count");
+                break;
+        }
 
+        recyclerViewAdapter.setData(productList);
     }
 
 
     @Override
-    public void launchIntent(String url) {
+    public void launchIntent() {
         Toast.makeText(mContext, "RecyclerView Row selected", Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(activityContext, DetailActivity.class).putExtra("url", url));
+        startActivity(new Intent(activityContext, DetailActivity.class));
     }
 }

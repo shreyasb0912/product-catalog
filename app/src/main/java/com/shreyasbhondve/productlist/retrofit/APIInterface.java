@@ -1,5 +1,5 @@
 package com.shreyasbhondve.productlist.retrofit;
-import com.shreyasbhondve.productlist.pojo.Category;
+
 import com.shreyasbhondve.productlist.pojo.ProductCatalog;
 import com.shreyasbhondve.productlist.pojo.Ranking;
 
