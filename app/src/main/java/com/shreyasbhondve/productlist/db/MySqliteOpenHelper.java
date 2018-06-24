@@ -43,9 +43,9 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
     public static final String PRODUCT_COLUMN_PRODUCT_NAME = "name";
     public static final String PRODUCT_COLUMN_PRODUCT_DATE_ADDED = "date_added";
     public static final String PRODUCT_COLUMN_CATEGORY_ID = "cat_id";
-    public static final String PRODUCT_COLUMN_VIEW_COUNT= "view_count";
+    public static final String PRODUCT_COLUMN_VIEW_COUNT = "view_count";
     public static final String PRODUCT_COLUMN_ORDER_COUNT = "order_count";
-    public static final String PRODUCT_COLUMN_SHARE_COUNT= "share_count";
+    public static final String PRODUCT_COLUMN_SHARE_COUNT = "share_count";
 
     //Variant table
     public static final String VARIANT_TABLE_NAME = "variant";
@@ -54,6 +54,10 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
     public static final String VARIANT_COLUMN_VARIANT_SIZE = "size";
     public static final String VARIANT_COLUMN_VARIANT_PRICE = "price";
     public static final String VARIANT_COLUMN_PRODUCT_ID = "prod_id";
+
+    //Product view
+    public static final String PRODUCT_VIEW_NAME = "product_view";
+
 
     //Rankings table
 //    public static final String RANKING_TABLE_NAME = "rankings";
@@ -131,13 +135,8 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 
 //        try {
 //            db.execSQL(
-//                    "CREATE TABLE IF NOT EXISTS "
-//                            + RANKING_TABLE_NAME + "("
-//                            + RANKING_COLUMN_RANKING + " VARCHAR(20), "
-//                            + RANKING_COLUMN_VIEW_COUNT + " VARCHAR(20), "
-//                            + RANKING_COLUMN_ORDER_COUNT + " VARCHAR(20), "
-//                            + RANKING_COLUMN_SHARE_COUNT + " VARCHAR(20), "
-//                            + RANKING_COLUMN_PRODUCT_ID + " VARCHAR(50) " + ")"
+//                    "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS SELECT * FROM " + PRODUCT_TABLE_NAME
+//
 //            );
 //
 //        } catch (SQLException e) {
@@ -154,10 +153,23 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    protected List<ProductCatalog.Category.Product> getProducts(String filter) throws Resources.NotFoundException, NullPointerException {
+    protected List<ProductCatalog.Category.Product> getProducts() throws Resources.NotFoundException, NullPointerException {
         List<ProductCatalog.Category.Product> productList = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + PRODUCT_TABLE_NAME + " ORDER BY " + filter + " DESC", null);
+        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " ORDER BY view_count";
+        try {
+            //db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL(
+                    "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
+
+            );
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME;
+        Cursor cursor = db.rawQuery(queryToExecute, null);
 
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
@@ -179,11 +191,124 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 
     }
 
-    protected void isCategoriesPresent() throws Resources.NotFoundException, NullPointerException {
+    protected List<ProductCatalog.Category.Product> searchProducts(String keyword) throws Resources.NotFoundException, NullPointerException {
+        List<ProductCatalog.Category.Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " WHERE " + PRODUCT_COLUMN_PRODUCT_NAME + " LIKE '%" + keyword + "%'";
+        try {
+            db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL(
+                    "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
+
+            );
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " ORDER BY view_count";
+        Cursor cursor = db.rawQuery(queryToExecute, null);
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                String name = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_NAME));
+                String id = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_ID));
+                ProductCatalog.Category.Product product = new ProductCatalog.Category.Product();
+                product.setId(id);
+                product.setName(name);
+                productList.add(product);
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        // close db connection
+        db.close();
+
+        return productList;
+
+    }
+
+    protected List<ProductCatalog.Category.Product> sortProducts(String filter) throws Resources.NotFoundException, NullPointerException {
+        List<ProductCatalog.Category.Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+//        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " ORDER BY " + filter + " DESC";
+//        try {
+//            db.execSQL(
+//                    "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
+//
+//            );
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " ORDER BY " + filter + " DESC";
+        Cursor cursor = db.rawQuery(queryToExecute, null);
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                String name = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_NAME));
+                String id = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_ID));
+                ProductCatalog.Category.Product product = new ProductCatalog.Category.Product();
+                product.setId(id);
+                product.setName(name);
+                productList.add(product);
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        // close db connection
+        db.close();
+
+        return productList;
+
+    }
+
+    protected List<ProductCatalog.Category.Product> getCategorizedProducts(String cat_id) throws Resources.NotFoundException, NullPointerException {
+        List<ProductCatalog.Category.Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " WHERE id = " + cat_id;
+        try {
+            db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL(
+                    "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
+
+            );
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " WHERE id = " + cat_id + " ORDER BY view_count";
+        Cursor cursor = db.rawQuery(queryToExecute, null);
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                String name = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_NAME));
+                String id = cursor.getString(cursor.getColumnIndex(PRODUCT_COLUMN_PRODUCT_ID));
+                ProductCatalog.Category.Product product = new ProductCatalog.Category.Product();
+                product.setId(id);
+                product.setName(name);
+                productList.add(product);
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        // close db connection
+        db.close();
+
+        return productList;
+
+    }
+
+    protected List<ProductCatalog.Category> getCategories() throws Resources.NotFoundException, NullPointerException {
         List<ProductCatalog.Category> categoryList = new ArrayList<>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + CATEGORY_TABLE_NAME ;
+        String selectQuery = "SELECT  * FROM " + CATEGORY_TABLE_NAME;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -202,7 +327,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 
         // close db connection
         db.close();
-
+        return categoryList;
 
 
     }
@@ -242,12 +367,12 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 
     }
 
-    protected void insertCategory(ProductCatalog.Category category){
+    protected void insertCategory(ProductCatalog.Category category) {
 
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        Log.v("database","\ncat_id: " + category.getId() + "\ncat_name: " + category.getName() + "\n\n\n");
+        Log.v("database", "\ncat_id: " + category.getId() + "\ncat_name: " + category.getName() + "\n\n\n");
         contentValues.put(CATEGORY_COLUMN_CATEGORY_ID, category.getId());
         contentValues.put(CATEGORY_COLUMN_CATEGORY_NAME, category.getName());
         db.insert(CATEGORY_TABLE_NAME, null, contentValues);
@@ -303,7 +428,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 //        contentValues.put(PRODUCT_COLUMN_SHARE_COUNT, ranking.getShare_count());
 
         //db.insert(RANKING_TABLE_NAME, null, contentValues);
-        db.update(PRODUCT_TABLE_NAME,contentValues,"id=?",new String[]{
+        db.update(PRODUCT_TABLE_NAME, contentValues, "id=?", new String[]{
                 ranking.getId()
         });
         db.close();
@@ -320,7 +445,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         contentValues.put(PRODUCT_COLUMN_SHARE_COUNT, ranking.getShare_count());
 
         //db.insert(RANKING_TABLE_NAME, null, contentValues);
-        db.update(PRODUCT_TABLE_NAME,contentValues,"id=?",new String[]{
+        db.update(PRODUCT_TABLE_NAME, contentValues, "id=?", new String[]{
                 ranking.getId()
         });
         db.close();
@@ -337,7 +462,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
 //        contentValues.put(PRODUCT_COLUMN_SHARE_COUNT, ranking.getShare_count());
 
         //db.insert(RANKING_TABLE_NAME, null, contentValues);
-        db.update(PRODUCT_TABLE_NAME,contentValues,"id=?",new String[]{
+        db.update(PRODUCT_TABLE_NAME, contentValues, "id=?", new String[]{
                 ranking.getId()
         });
         db.close();

@@ -1,20 +1,23 @@
 package com.shreyasbhondve.productlist.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.shreyasbhondve.productlist.MyApplication;
@@ -30,10 +33,6 @@ import com.shreyasbhondve.productlist.di.qualifier.ApplicationContext;
 import com.shreyasbhondve.productlist.pojo.ProductCatalog;
 import com.shreyasbhondve.productlist.pojo.Ranking;
 import com.shreyasbhondve.productlist.retrofit.APIInterface;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +61,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @ActivityContext
     public Context activityContext;
 
+    private CardView searchByCategoryCardView;
+
+    private EditText searchEditText;
+
+    private ProgressBar progressBar = null;
+
     @Inject
     DataManager dataManager;
 
@@ -77,7 +82,43 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         setContentView(R.layout.activity_main);
 
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        searchByCategoryCardView = findViewById(R.id.searchByCategory);
+        searchEditText = findViewById(R.id.searchEdtTxt);
+        progressBar = findViewById(R.id.progressBar);
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String keyword = s.toString();
+                List<ProductCatalog.Category.Product> productList = dataManager.searchProducts(keyword);
+                populateRecyclerView(productList);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        searchByCategoryCardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //startActivity(new Intent(activityContext, SearchByCategoryActivity.class));
+
+                startActivityForResult(new Intent(activityContext, SearchByCategoryActivity.class),1);
+            }
+        });
+
+
+        //recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+
+        GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(manager);
 
         ApplicationComponent applicationComponent = MyApplication.get(this).getApplicationComponent();
         mainActivityComponent = DaggerMainActivityComponent.builder()
@@ -92,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         boolean firstRun = dataManager.getFirstRun("first_run", true);
         Log.v("database", "IS first run? " + firstRun);
         if (firstRun) {
+            progressBar.setVisibility(View.VISIBLE);
             apiInterface.getCategories("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<ProductCatalog>() {
                 @Override
                 public void onResponse(retrofit2.Call<ProductCatalog> call, retrofit2.Response<ProductCatalog> response) {
@@ -107,10 +149,27 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 }
             });
         } else {
-            populateRecyclerView();
+            progressBar.setVisibility(View.GONE);
+            List<ProductCatalog.Category.Product> productList = dataManager.getProducts();
+            populateRecyclerView(productList);
         }
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                String cat_id=data.getStringExtra("cat_id");
+                List<ProductCatalog.Category.Product> productList = dataManager.getCategorizedProducts(cat_id);
+                recyclerViewAdapter.setData(productList);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
     }
 
     @Override
@@ -127,15 +186,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         switch (item.getItemId()) {
             case R.id.most_viewed:
                 filter = Filter.MOST_VIEWED;
-                populateRecyclerView();
+                sortRecyclerView();
                 return true;
             case R.id.most_ordered:
                 filter = Filter.MOST_ORDERED;
-                populateRecyclerView();
+                sortRecyclerView();
                 return true;
             case R.id.most_shared:
                 filter = Filter.MOST_SHARED;
-                populateRecyclerView();
+                sortRecyclerView();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -311,10 +370,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
 
                         }
-
-                    populateRecyclerView();
+                    List<ProductCatalog.Category.Product> productList = dataManager.getProducts();
+                    populateRecyclerView(productList);
 
                     dataManager.setFirstRun("first_run", false);
+
+                    progressBar.setVisibility(View.GONE);
 
                 }
 
@@ -326,17 +387,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         }
     }
 
-    private void populateRecyclerView() {
+    private void populateRecyclerView(List<ProductCatalog.Category.Product> productList){
+        recyclerViewAdapter.setData(productList);
+    }
+
+    private void sortRecyclerView() {
         List<ProductCatalog.Category.Product> productList = null;
         switch (filter){
             case MOST_VIEWED:
-                productList = dataManager.getProducts("view_count");
+                productList = dataManager.sortProducts("view_count");
                 break;
             case MOST_ORDERED:
-                productList = dataManager.getProducts("order_count");
+                productList = dataManager.sortProducts("order_count");
                 break;
             case MOST_SHARED:
-                productList = dataManager.getProducts("share_count");
+                productList = dataManager.sortProducts("share_count");
                 break;
         }
 

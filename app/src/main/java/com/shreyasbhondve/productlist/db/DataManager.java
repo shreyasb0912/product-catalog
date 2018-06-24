@@ -50,12 +50,24 @@ public class DataManager {
         return mySqliteOpenHelper.isVariantsPresent();
     }
 
-    public List<ProductCatalog.Category.Product> getProducts(String filter) throws Resources.NotFoundException,NullPointerException{
-        return mySqliteOpenHelper.getProducts(filter);
+    public List<ProductCatalog.Category.Product> getProducts() throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.getProducts();
     }
 
-    public void getCategories() throws Resources.NotFoundException,NullPointerException{
-        mySqliteOpenHelper.isCategoriesPresent();
+    public List<ProductCatalog.Category.Product> sortProducts(String filter) throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.sortProducts(filter);
+    }
+
+    public List<ProductCatalog.Category.Product> searchProducts(String keyword) throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.searchProducts(keyword);
+    }
+
+    public List<ProductCatalog.Category> getCategories() throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.getCategories();
+    }
+
+    public List<ProductCatalog.Category.Product> getCategorizedProducts(String cat_id) throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.getCategorizedProducts(cat_id);
     }
 
     public void insertCategory(ProductCatalog.Category category){

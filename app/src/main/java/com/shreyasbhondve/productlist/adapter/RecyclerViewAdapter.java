@@ -35,8 +35,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.txtName.setText(productList.get(position).getId());
-        holder.txtBirthYear.setText(productList.get(position).getName());
+        holder.txtName.setText(productList.get(position).getName());
+
     }
 
     @Override
@@ -47,14 +47,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txtName;
-        private TextView txtBirthYear;
+
         private CardView constraintLayoutContainer;
 
         ViewHolder(View itemView) {
             super(itemView);
 
             txtName = itemView.findViewById(R.id.txtName);
-            txtBirthYear = itemView.findViewById(R.id.txtBirthYear);
+
             constraintLayoutContainer = itemView.findViewById(R.id.card_view);
 
             constraintLayoutContainer.setOnClickListener(new View.OnClickListener() {

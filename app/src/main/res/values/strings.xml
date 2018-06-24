@@ -6,4 +6,5 @@
         <item>Most Ordered</item>
         <item>Most Shared</item>
     </string-array>
+    <string name="title_activity_search_by_category">Select Category</string>
 </resources>
