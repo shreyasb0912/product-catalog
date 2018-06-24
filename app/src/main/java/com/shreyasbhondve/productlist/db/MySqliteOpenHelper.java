@@ -73,7 +73,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
     }
 
     private void tableCreateStatements(SQLiteDatabase db) {
-        
+
         try {
             db.execSQL(
                     "CREATE TABLE IF NOT EXISTS "
