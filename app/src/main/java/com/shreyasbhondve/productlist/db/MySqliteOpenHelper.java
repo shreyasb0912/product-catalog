@@ -149,16 +149,16 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + CATEGORY_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + PRODUCT_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + VARIANT_TABLE_NAME);
-//        db.execSQL("DROP TABLE IF EXISTS " + RANKING_TABLE_NAME);
+        db.execSQL("DROP VIEW IF EXISTS " + PRODUCT_VIEW_NAME);
         onCreate(db);
     }
 
     protected List<ProductCatalog.Category.Product> getProducts() throws Resources.NotFoundException, NullPointerException {
         List<ProductCatalog.Category.Product> productList = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();
-        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " ORDER BY view_count";
+        String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME;
         try {
-            //db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL("DROP VIEW IF EXISTS " + PRODUCT_VIEW_NAME);
             db.execSQL(
                     "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
 
@@ -168,7 +168,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         }
 
-        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME;
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " ORDER BY view_count DESC";
         Cursor cursor = db.rawQuery(queryToExecute, null);
 
         if (cursor.moveToFirst()) {
@@ -196,7 +196,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " WHERE " + PRODUCT_COLUMN_PRODUCT_NAME + " LIKE '%" + keyword + "%'";
         try {
-            db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL("DROP VIEW IF EXISTS " + PRODUCT_VIEW_NAME);
             db.execSQL(
                     "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
 
@@ -206,7 +206,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         }
 
-        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " ORDER BY view_count";
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " ORDER BY view_count DESC";
         Cursor cursor = db.rawQuery(queryToExecute, null);
 
         if (cursor.moveToFirst()) {
@@ -271,7 +271,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String queryForView = "SELECT * FROM " + PRODUCT_TABLE_NAME + " WHERE id = " + cat_id;
         try {
-            db.execSQL("DROP VIEW " + PRODUCT_VIEW_NAME);
+            db.execSQL("DROP VIEW IF EXISTS " + PRODUCT_VIEW_NAME);
             db.execSQL(
                     "CREATE VIEW " + PRODUCT_VIEW_NAME + " AS " + queryForView
 
@@ -281,7 +281,7 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         }
 
-        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " WHERE id = " + cat_id + " ORDER BY view_count";
+        String queryToExecute = "SELECT * FROM " + PRODUCT_VIEW_NAME + " WHERE id = " + cat_id + " ORDER BY view_count DESC";
         Cursor cursor = db.rawQuery(queryToExecute, null);
 
         if (cursor.moveToFirst()) {
