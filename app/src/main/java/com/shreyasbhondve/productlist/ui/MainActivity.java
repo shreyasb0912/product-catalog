@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     private ProgressBar progressBar = null;
 
+    private int REQUEST_CODE = 1;
+
     @Inject
     DataManager dataManager;
 
@@ -86,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         searchEditText = findViewById(R.id.searchEdtTxt);
         progressBar = findViewById(R.id.progressBar);
 
+        /**
+         * Search functionality
+         */
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -105,17 +110,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             }
         });
 
+        /**
+         * Select category
+         */
         searchByCategoryCardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(activityContext, SearchByCategoryActivity.class));
-
-                startActivityForResult(new Intent(activityContext, SearchByCategoryActivity.class),1);
+                startActivityForResult(new Intent(activityContext, SearchByCategoryActivity.class),REQUEST_CODE);
             }
         });
 
-
-        //recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(manager);
@@ -130,8 +134,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         recyclerView.setAdapter(recyclerViewAdapter);
 
 
+        /**
+         * firstRun is flag which decides whether to fetch data from server or from local database.
+         * If firstRun = true then fetch data from server else fetch data from local database
+         */
         boolean firstRun = dataManager.getFirstRun("first_run", true);
-        Log.v("database", "IS first run? " + firstRun);
         if (firstRun) {
             progressBar.setVisibility(View.VISIBLE);
             apiInterface.getCategories("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<ProductCatalog>() {
@@ -160,14 +167,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1) {
+        /**
+         * Show prducts under the category selected by user
+         */
+        if (requestCode == REQUEST_CODE) {
             if(resultCode == Activity.RESULT_OK){
                 String cat_id=data.getStringExtra("cat_id");
                 List<ProductCatalog.Category.Product> productList = dataManager.getCategorizedProducts(cat_id);
                 recyclerViewAdapter.setData(productList);
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                //Write your code if there's no result
             }
         }
     }
@@ -182,7 +189,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        // Handle item selection
+
+        /**
+         * Sort products according to the count of views, orders or shares.
+         */
         switch (item.getItemId()) {
             case R.id.most_viewed:
                 filter = Filter.MOST_VIEWED;
@@ -203,6 +213,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     }
 
+    /**
+     * Function to parse the Categorioes data fetched from the server and populate it in the local database
+     */
     public class ParseData extends AsyncTask<List<ProductCatalog.Category>, Void, Void> {
 
         ArrayList<ProductCatalog.Category> newCategoryList = new ArrayList<>();
@@ -219,14 +232,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         protected Void doInBackground(List<ProductCatalog.Category>... categoryLists) {
 
             List<ProductCatalog.Category> categoryList = categoryLists[0];
-            //Log.v("database", "\n----------From server--------\n");
+
             for (int i = 0; i < categoryList.size(); i++) {
                 ProductCatalog.Category newCategory = new ProductCatalog.Category();
                 ProductCatalog.Category category = categoryList.get(i);
                 String cat_id = category.getId();
                 newCategory.setId(cat_id);
                 newCategory.setName(category.getName());
-                //Log.v("database", "\ncat_id: " + cat_id + "\ncat_name: " + category.getName());
+
                 List<ProductCatalog.Category.Product> productList = category.getProducts();
                 for (int j = 0; j < productList.size(); j++) {
                     ProductCatalog.Category.Product newProduct = new ProductCatalog.Category.Product();
@@ -236,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                     newProduct.setId(prod_id);
                     newProduct.setName(product.getName());
                     newProduct.setDate_added(product.getDate_added());
-                    //Log.v("database","------\nprod_id: " + prod_id + "\nprod_name: " + product.getName() + "------\n");
+
                     List<ProductCatalog.Category.Product.Variants> variantsList = product.getVariants();
                     for (int k = 0; k < variantsList.size(); k++) {
                         ProductCatalog.Category.Product.Variants newVariants = new ProductCatalog.Category.Product.Variants();
@@ -247,25 +260,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                         newVariants.setPrice(variants.getPrice());
                         newVariants.setSize(variants.getSize());
                         newVariants.setProd_id(prod_id);
-                        //Log.v("database","------\nvar_id: " + var_id + "\nprice: " + variants.getPrice() +  "\nsize: " + variants.getSize() + "------\n");
                         newVariantsList.add(newVariants);
                     }
-                    //newProduct.setVariants(variantsList);
+
                     newProductList.add(newProduct);
                 }
 
-
-
-                //newCategory.setProducts(productList);
                 newCategoryList.add(newCategory);
             }
-            //Log.v("database", "\n-------------------------------------");
+
             insertCategories();
             insertProducts();
             insertVariants();
-
-
-
 
             return null;
         }
@@ -314,21 +320,22 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //dataManager.setFirstRun("first_run", false);
 
+            /**
+             * Function to parse the Ranking data fetched from the server and populate it in the local database
+             */
             apiInterface.getRankings("https://stark-spire-93433.herokuapp.com/json/").enqueue(new Callback<Ranking>() {
                 @Override
                 public void onResponse(retrofit2.Call<Ranking> call, retrofit2.Response<Ranking> response) {
 
                     List<Ranking.ProductRanking> rankingList = response.body().productRankings;
 
-
                         for (int i = 0; i < rankingList.size(); i++) {
 
                             String ranking = rankingList.get(i).getRanking();
                             List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
                             if(ranking.equals("Most Viewed Products")){
-                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+
                                 for(int j=0;j<rankingProducts.size();j++){
                                     Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
                                     product.setId(rankingProducts.get(j).getId());
@@ -342,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
                             }
                             else if(ranking.equals("Most OrdeRed Products")){
-                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+
                                 for(int j=0;j<rankingProducts.size();j++){
                                     Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
                                     product.setId(rankingProducts.get(j).getId());
@@ -355,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 }
                             }
                             else if(ranking.equals("Most ShaRed Products")){
-                                //List<Ranking.ProductRanking.Products> rankingProducts = rankingList.get(i).getProducts();
+
                                 for(int j=0;j<rankingProducts.size();j++){
                                     Ranking.ProductRanking.Products product = new Ranking.ProductRanking.Products();
                                     product.setId(rankingProducts.get(j).getId());
@@ -387,10 +394,17 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         }
     }
 
+    /**
+     * Function to populate the Products data into local database
+     * @param productList
+     */
     private void populateRecyclerView(List<ProductCatalog.Category.Product> productList){
         recyclerViewAdapter.setData(productList);
     }
 
+    /**
+     * Function to sort the products data according to most viewed, most ordered or most shared
+     */
     private void sortRecyclerView() {
         List<ProductCatalog.Category.Product> productList = null;
         switch (filter){

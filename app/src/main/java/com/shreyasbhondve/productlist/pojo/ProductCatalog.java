@@ -112,6 +112,26 @@ public class ProductCatalog {
                 return variants;
             }
 
+            public String minPrice;
+
+            public String maxPrice;
+
+            public String getMinPrice() {
+                return minPrice;
+            }
+
+            public void setMinPrice(String minPrice) {
+                this.minPrice = minPrice;
+            }
+
+            public String getMaxPrice() {
+                return maxPrice;
+            }
+
+            public void setMaxPrice(String maxPrice) {
+                this.maxPrice = maxPrice;
+            }
+
             public static class Variants {
                 @SerializedName("id")
                 public String id;

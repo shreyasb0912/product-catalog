@@ -94,7 +94,4 @@ public class DataManager {
         mySqliteOpenHelper.insertShareRanking(ranking);
     }
 
-//    public void exportDB(){
-//        mySqliteOpenHelper.exportDB();
-//    }
 }
