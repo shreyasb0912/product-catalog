@@ -199,6 +199,36 @@ public class MySqliteOpenHelper extends SQLiteOpenHelper {
         return product;
     }
 
+    protected List<ProductCatalog.Category.Product.Variants> getVariants(String prod_id){
+        List<ProductCatalog.Category.Product.Variants> variantsList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * max FROM " + VARIANT_TABLE_NAME + " WHERE " + VARIANT_COLUMN_PRODUCT_ID + "= " + prod_id;
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                ProductCatalog.Category.Product.Variants variants = new ProductCatalog.Category.Product.Variants();
+                String id = cursor.getString(cursor.getColumnIndex(VARIANT_COLUMN_VARIANT_ID));
+                String size = cursor.getString(cursor.getColumnIndex(VARIANT_COLUMN_VARIANT_SIZE));
+                String color = cursor.getString(cursor.getColumnIndex(VARIANT_COLUMN_VARIANT_COLOR));
+                String price = cursor.getString(cursor.getColumnIndex(VARIANT_COLUMN_VARIANT_PRICE));
+                variants.setId(id);
+                variants.setSize(size);
+                variants.setColor(color);
+                variants.setPrice(price);
+                variantsList.add(variants);
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        // close db connection
+        db.close();
+
+        return variantsList;
+    }
+
     protected List<ProductCatalog.Category.Product> searchProducts(String keyword) throws Resources.NotFoundException, NullPointerException {
         List<ProductCatalog.Category.Product> productList = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();

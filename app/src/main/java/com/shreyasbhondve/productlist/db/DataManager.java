@@ -54,6 +54,10 @@ public class DataManager {
         return mySqliteOpenHelper.getProducts();
     }
 
+    public List<ProductCatalog.Category.Product.Variants> getVariants(String prod_id) throws Resources.NotFoundException,NullPointerException{
+        return mySqliteOpenHelper.getVariants(prod_id);
+    }
+
     public List<ProductCatalog.Category.Product> sortProducts(String filter) throws Resources.NotFoundException,NullPointerException{
         return mySqliteOpenHelper.sortProducts(filter);
     }

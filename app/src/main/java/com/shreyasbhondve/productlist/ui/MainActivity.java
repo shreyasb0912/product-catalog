@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
@@ -425,7 +426,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     @Override
     public void launchIntent() {
-        Toast.makeText(mContext, "RecyclerView Row selected", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mContext, "RecyclerView Row selected", Toast.LENGTH_SHORT).show();
+        //List<ProductCatalog.Category.Product.Variants> variantsList = dataManager.getVariants("1");
         startActivity(new Intent(activityContext, DetailActivity.class));
     }
 }
